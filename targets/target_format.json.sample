@@ -1,0 +1,6 @@
+{
+  "targetId": "stampo",
+  "repositoryPath": "../store_point",
+  "branch": "dev",
+  "remote": "origin"
+}

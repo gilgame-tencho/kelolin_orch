@@ -1,0 +1,13 @@
+{
+  "targetId": "stampo",
+  "tasks": [
+    {
+      "issue": 404,
+      "type": "design"
+    },
+    {
+      "issue": 414,
+      "type": "development"
+    }
+  ]
+}

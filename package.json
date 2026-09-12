@@ -1,0 +1,12 @@
+{
+  "name": "kelolin-orch",
+  "version": "0.1.0",
+  "description": "Codex CLI orchestrator for sequential GitHub Issue tasks.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "check": "node --check src/index.js && node --check src/config.js && node --check src/git.js && node --check src/github.js && node --check src/codex.js && node --check src/logger.js && node --check src/process.js"
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}
