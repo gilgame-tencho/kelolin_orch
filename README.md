@@ -29,7 +29,7 @@ Target 設定例:
 {
   "targetId": "stampo",
   "repositoryPath": "../stampo",
-  "branch": "feature/sprint-10",
+  "branch": "dev",
   "remote": "origin"
 }
 ```
@@ -53,13 +53,13 @@ Task List 例:
 ## 実行
 
 ```bash
-node src/index.js --target targets/stampo.json --tasks tasks/stampo/sprint-10.json
+node src/index.js --target targets/stampo.json --tasks tasks/stampo/tasks.json
 ```
 
 または:
 
 ```bash
-npm start -- --target targets/stampo.json --tasks tasks/stampo/sprint-10.json
+npm start -- --target targets/stampo.json --tasks tasks/stampo/tasks.json
 ```
 
 ## 動作概要

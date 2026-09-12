@@ -6,7 +6,7 @@ const VALID_TASK_TYPES = new Set(["development", "design"]);
 function usage() {
   return [
     "Usage:",
-    "  node src/index.js --target targets/stampo.json --tasks tasks/stampo/sprint-10.json"
+    "  node src/index.js --target targets/stampo.json --tasks tasks/stampo/tasks.json"
   ].join("\n");
 }
 

@@ -157,7 +157,7 @@ Target設定はJSONファイルとして管理する。
 {
   "targetId": "stampo",
   "repositoryPath": "../stampo",
-  "branch": "feature/sprint-10",
+  "branch": "dev",
   "remote": "origin"
 }
 ```
@@ -712,7 +712,7 @@ logs/
 ### 20.3 ファイル名例
 
 ```text
-20260913_010203_stampo_sprint-10.log
+20260913_010203_stampo_dev.log
 ```
 
 日時を含め、実行単位で一意になるファイル名とする。
@@ -855,7 +855,7 @@ OrchestratorはNode.js CLIとして実行できるようにする。
 ```bash
 node src/index.js \
   --target targets/stampo.json \
-  --tasks tasks/stampo/sprint-10.json
+  --tasks tasks/stampo/tasks.json
 ```
 
 Windows環境では1行で実行可能であればよい。
@@ -863,7 +863,7 @@ Windows環境では1行で実行可能であればよい。
 例：
 
 ```bash
-node src/index.js --target targets/stampo.json --tasks tasks/stampo/sprint-10.json
+node src/index.js --target targets/stampo.json --tasks tasks/stampo/tasks.json
 ```
 
 ### 22.1 必須引数
