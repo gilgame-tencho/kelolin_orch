@@ -18,15 +18,15 @@ function buildPrompt(type, issue) {
 
 function codexCommandCandidates(target) {
   const configured = process.env.CODEX_COMMAND || target.codexCommand;
-  if (configured) {
-    return [configured];
+  const pathCommands = process.platform === "win32"
+    ? ["codex.exe", "codex.cmd", "codex"]
+    : ["codex"];
+
+  if (!configured) {
+    return pathCommands;
   }
 
-  if (process.platform === "win32") {
-    return ["codex.exe", "codex.cmd", "codex"];
-  }
-
-  return ["codex"];
+  return [configured, ...pathCommands.filter((command) => command !== configured)];
 }
 
 async function runCodex(target, prompt, logger) {
@@ -54,7 +54,7 @@ async function runCodex(target, prompt, logger) {
 
   const message = [
     "Codex CLI was not found.",
-    "Set CODEX_COMMAND or target.codexCommand to the full codex executable path.",
+    "Set CODEX_COMMAND or target.codexCommand to a valid codex command.",
     `Tried: ${candidates.join(", ")}`
   ].join(" ");
   const error = new Error(message);
