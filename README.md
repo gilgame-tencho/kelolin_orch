@@ -36,6 +36,18 @@ Target 設定例:
 
 `repositoryPath` の相対パスは、Orchestrator を実行するカレントディレクトリから解決されます。
 
+Codex CLI が PATH から見つからない環境では、環境変数 `CODEX_COMMAND` か Target 設定の `codexCommand` に実行ファイルを指定できます。
+
+```json
+{
+  "targetId": "stampo",
+  "repositoryPath": "../stampo",
+  "branch": "feature/sprint-10",
+  "remote": "origin",
+  "codexCommand": "C:/Users/your-name/AppData/Local/OpenAI/Codex/bin/xxxx/codex.exe"
+}
+```
+
 Task List 例:
 
 ```json

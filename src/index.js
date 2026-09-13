@@ -18,7 +18,7 @@ async function runTask({ target, task, index, total, logger }) {
   const { promptPath, prompt } = buildPrompt(task.type, issue);
   logger.line(`Prompt template: ${promptPath}`);
 
-  const codexResult = await runCodex(target.repositoryPath, prompt, logger);
+  const codexResult = await runCodex(target, prompt, logger);
   logger.line("");
   logger.line(`Codex exit code: ${codexResult.code}`);
   logger.line(`Task codex process ended at: ${new Date().toISOString()}`);

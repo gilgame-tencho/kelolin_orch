@@ -70,6 +70,10 @@ function validateTarget(target) {
   requireString(target, "repositoryPath", "target");
   requireString(target, "branch", "target");
   requireString(target, "remote", "target");
+
+  if (target.codexCommand !== undefined) {
+    requireString(target, "codexCommand", "target");
+  }
 }
 
 function validateTasks(taskList) {
