@@ -62,16 +62,11 @@ async function runCodex(target, prompt, logger) {
   throw error;
 }
 
-module.exports = {
-  buildPrompt,
-  codexCommandCandidates,
-  runCodex
-};
-
 function parseCodexUsage(stdout) {
   const usage = {
     inputTokens: 0,
     cachedInputTokens: 0,
+    cacheWriteInputTokens: 0,
     outputTokens: 0,
     reasoningOutputTokens: 0
   };
@@ -95,9 +90,17 @@ function parseCodexUsage(stdout) {
 
     usage.inputTokens += event.usage.input_tokens || 0;
     usage.cachedInputTokens += event.usage.cached_input_tokens || 0;
+    usage.cacheWriteInputTokens += event.usage.cache_write_input_tokens || 0;
     usage.outputTokens += event.usage.output_tokens || 0;
     usage.reasoningOutputTokens += event.usage.reasoning_output_tokens || 0;
   }
 
   return usage;
 }
+
+module.exports = {
+  buildPrompt,
+  codexCommandCandidates,
+  runCodex,
+  parseCodexUsage
+};
