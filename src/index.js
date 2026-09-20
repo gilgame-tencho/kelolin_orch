@@ -23,22 +23,23 @@ async function runTask({ target, task, index, total, logger }) {
   logger.line(`Codex exit code: ${codexResult.code}`);
   logger.line(`Task codex process ended at: ${new Date().toISOString()}`);
 
+  let tokenUsage = null;
   try {
-    usage = parseCodexUsage(codexResult.stdout);
+    tokenUsage = parseCodexUsage(codexResult.stdout);
   } catch (error) {
     logger.line(`Token Usage: unavailable (${error.message})`);
   }
 
-  if (usage) {
-    const uncachedInputTokens = usage.inputTokens - usage.cachedInputTokens;  
+  if (tokenUsage) {
+    const uncachedInputTokens = tokenUsage.inputTokens - tokenUsage.cachedInputTokens;  
 
     logger.line("Token Usage:");
-    logger.line(`  Input tokens: ${usage.inputTokens}`);
-    logger.line(`  Cached input tokens: ${usage.cachedInputTokens}`);
+    logger.line(`  Input tokens: ${tokenUsage.inputTokens}`);
+    logger.line(`  Cached input tokens: ${tokenUsage.cachedInputTokens}`);
     logger.line(`  Uncached input tokens: ${uncachedInputTokens}`);
-    logger.line(`  Cache write input tokens: ${usage.cacheWriteInputTokens}`);
-    logger.line(`  Output tokens: ${usage.outputTokens}`);
-    logger.line(`  Reasoning output tokens: ${usage.reasoningOutputTokens}`);
+    logger.line(`  Cache write input tokens: ${tokenUsage.cacheWriteInputTokens}`);
+    logger.line(`  Output tokens: ${tokenUsage.outputTokens}`);
+    logger.line(`  Reasoning output tokens: ${tokenUsage.reasoningOutputTokens}`);
   }
 
   // logger.block("codex stdout", codexResult.stdout);
