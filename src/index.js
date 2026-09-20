@@ -4,7 +4,7 @@ const { loadConfig, usage } = require("./config");
 const { createLogger } = require("./logger");
 const { verifyRepository, verifyCommitOnRemote } = require("./git");
 const { getCompletedIssueComment } = require("./github");
-const { buildPrompt, runCodex } = require("./codex");
+const { buildPrompt, runCodex, parseCodexUsage } = require("./codex");
 
 async function runTask({ target, task, index, total, logger }) {
   const issue = Number(task.issue);
@@ -22,6 +22,15 @@ async function runTask({ target, task, index, total, logger }) {
   logger.line("");
   logger.line(`Codex exit code: ${codexResult.code}`);
   logger.line(`Task codex process ended at: ${new Date().toISOString()}`);
+
+  const usage = parseCodexUsage(codexResult.stdout);
+  const uncachedInputTokens = usage.inputTokens - usage.cachedInputTokens;  
+
+  logger.line("Token Usage:");
+  logger.line(`  Input tokens: ${usage.inputTokens}`);
+  logger.line(`  Cached input tokens: ${usage.cachedInputTokens}`);
+  logger.line(`  Output tokens: ${usage.outputTokens}`);
+  logger.line(`  Reasoning output tokens: ${usage.reasoningOutputTokens}`);
 
   // logger.block("codex stdout", codexResult.stdout);
   // logger.block("codex stderr", codexResult.stderr);

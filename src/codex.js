@@ -37,7 +37,7 @@ async function runCodex(target, prompt, logger) {
   for (const command of candidates) {
     try {
       logger.line(`Codex command: ${command}`);
-      return await runCommand(command, ["exec", prompt], {
+      return await runCommand(command, ["exec", "--json",  prompt], {
         cwd: target.repositoryPath,
         echo: true,
         onStdout: (text) => logger.appendRaw(text),
@@ -67,3 +67,37 @@ module.exports = {
   codexCommandCandidates,
   runCodex
 };
+
+function parseCodexUsage(stdout) {
+  const usage = {
+    inputTokens: 0,
+    cachedInputTokens: 0,
+    outputTokens: 0,
+    reasoningOutputTokens: 0
+  };
+
+  for (const line of stdout.split(/\r?\n/)) {
+    if (!line.trim()) {
+      continue;
+    }
+
+    let event;
+
+    try {
+      event = JSON.parse(line);
+    } catch {
+      continue;
+    }
+
+    if (event.type !== "turn.completed" || !event.usage) {
+      continue;
+    }
+
+    usage.inputTokens += event.usage.input_tokens || 0;
+    usage.cachedInputTokens += event.usage.cached_input_tokens || 0;
+    usage.outputTokens += event.usage.output_tokens || 0;
+    usage.reasoningOutputTokens += event.usage.reasoning_output_tokens || 0;
+  }
+
+  return usage;
+}
