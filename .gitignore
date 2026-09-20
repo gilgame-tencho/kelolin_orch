@@ -2,3 +2,4 @@
 logs/*
 targets/*.json
 tasks.json
+node_modules/
