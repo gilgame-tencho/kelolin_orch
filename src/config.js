@@ -18,6 +18,10 @@ function usage() {
 function parseArgs(argv) {
   const args = {};
 
+  // ### default parameters ###
+  args.target = "targets/stampo.json";
+  //args.tasks = "tasks/stampo/tasks.json";
+
   for (let i = 0; i < argv.length; i += 1) {
     const current = argv[i];
     if (current === "--target" || current === "--tasks") {
