@@ -23,8 +23,8 @@ async function runTask({ target, task, index, total, logger }) {
   logger.line(`Codex exit code: ${codexResult.code}`);
   logger.line(`Task codex process ended at: ${new Date().toISOString()}`);
 
-  logger.block("codex stdout", codexResult.stdout);
-  logger.block("codex stderr", codexResult.stderr);
+  // logger.block("codex stdout", codexResult.stdout);
+  // logger.block("codex stderr", codexResult.stderr);
 
   if (codexResult.code !== 0) {
     throw new Error(`codex exec failed for #${issue} with exit code ${codexResult.code}`);
