@@ -37,7 +37,7 @@ async function runCodex(target, prompt, logger) {
   for (const command of candidates) {
     try {
       logger.line(`Codex command: ${command}`);
-      return await runCommand(command, ["exec", "--json",  prompt], {
+      return await runCommand(command, ["exec", "--json", "--ephemeral",  prompt], {
         cwd: target.repositoryPath,
         echo: true,
         onStdout: (text) => logger.appendRaw(text),
