@@ -1,0 +1,11 @@
+#{issue} のInvestigationTaskを実施してください。
+
+対象Issueの内容を確認し、必要な調査、確認を実施してください。
+ソースの修正は伴いません。調査・確認結果は対象Issueにコメント追加してください。
+
+Issueへの完了コメントには、Orchestratorが機械的に完了確認できるよう、
+必ず以下の2行を含めてください。
+
+Status: COMPLETED
+
+上記すべてを完了できた場合のみ `Status: COMPLETED` としてください。

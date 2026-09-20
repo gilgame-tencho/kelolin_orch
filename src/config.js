@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const VALID_TASK_TYPES = new Set([
   "test",
+  "Investigation",
   "development",
   "design",
   "development_review_action",
