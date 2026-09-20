@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const VALID_TASK_TYPES = new Set([
+  "test",
   "development",
   "design",
   "development_review_action",
