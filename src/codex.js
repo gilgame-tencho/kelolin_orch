@@ -1,6 +1,13 @@
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { runCommand } = require("./process");
+
+const CODEX_SETTING_KEYS = {
+  model: "model",
+  reasoningEffort: "model_reasoning_effort",
+  serviceTier: "service_tier"
+};
 
 function buildPrompt(type, issue) {
   const promptPath = path.resolve(process.cwd(), "prompts", `${type}.txt`);
@@ -29,15 +36,119 @@ function codexCommandCandidates(target) {
   return [configured, ...pathCommands.filter((command) => command !== configured)];
 }
 
-async function runCodex(target, prompt, logger) {
+function parseCodexSettings(text) {
+  const settings = {};
+  let section = "";
+
+  for (const line of text.split(/\r?\n/)) {
+    const sectionMatch = line.match(/^\s*\[([^\]]+)\]\s*(?:#.*)?$/);
+    if (sectionMatch) {
+      section = sectionMatch[1].trim();
+      continue;
+    }
+
+    if (section !== "" && section !== "models.new_thread") {
+      continue;
+    }
+
+    const valueMatch = line.match(/^\s*(model|model_reasoning_effort|service_tier)\s*=\s*(["'])(.*?)\2\s*(?:#.*)?$/);
+    if (!valueMatch) {
+      continue;
+    }
+
+    const key = Object.entries(CODEX_SETTING_KEYS)
+      .find(([, configKey]) => configKey === valueMatch[1])?.[0];
+    if (key) {
+      settings[key] = valueMatch[3];
+    }
+  }
+
+  return settings;
+}
+
+function readCodexSettings(configPath) {
+  try {
+    return parseCodexSettings(fs.readFileSync(configPath, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return {};
+    }
+    return {};
+  }
+}
+
+function codexHome(env = process.env) {
+  if (env.CODEX_HOME) {
+    return env.CODEX_HOME;
+  }
+
+  const home = env.HOME || env.USERPROFILE;
+  if (home) {
+    return path.join(home, ".codex");
+  }
+
+  try {
+    return path.join(os.homedir(), ".codex");
+  } catch {
+    return null;
+  }
+}
+
+function resolveCodexExecutionSettings(target, env = process.env) {
+  const home = codexHome(env);
+  const userSettings = home
+    ? readCodexSettings(path.join(home, "config.toml"))
+    : {};
+  const projectSettings = readCodexSettings(
+    path.join(target.repositoryPath, ".codex", "config.toml")
+  );
+
+  return {
+    model: target.codexModel || projectSettings.model || userSettings.model || "unknown",
+    reasoningEffort: target.codexReasoningEffort
+      || projectSettings.reasoningEffort
+      || userSettings.reasoningEffort
+      || "unknown",
+    serviceTier: target.codexServiceTier
+      || projectSettings.serviceTier
+      || userSettings.serviceTier
+      || "unknown"
+  };
+}
+
+function codexExecArgs(settings, prompt) {
+  const args = ["exec", "--json", "--ephemeral"];
+
+  if (settings.model !== "unknown") {
+    args.push("--model", settings.model);
+  }
+  if (settings.reasoningEffort !== "unknown") {
+    args.push("--config", `model_reasoning_effort=${JSON.stringify(settings.reasoningEffort)}`);
+  }
+  if (settings.serviceTier !== "unknown") {
+    args.push("--config", `service_tier=${JSON.stringify(settings.serviceTier)}`);
+  }
+
+  args.push(prompt);
+  return args;
+}
+
+function logCodexExecutionSettings(logger, settings) {
+  logger.line(`Codex model: ${settings.model}`);
+  logger.line(`Reasoning effort: ${settings.reasoningEffort}`);
+  logger.line(`Service tier: ${settings.serviceTier}`);
+}
+
+async function runCodex(target, prompt, logger, settings = resolveCodexExecutionSettings(target)) {
   logger.line("Starting codex exec...");
   const candidates = codexCommandCandidates(target);
+  const args = codexExecArgs(settings, prompt);
   let lastError = null;
 
   for (const command of candidates) {
     try {
       logger.line(`Codex command: ${command}`);
-      return await runCommand(command, ["exec", "--json", "--ephemeral",  prompt], {
+      return await runCommand(command, args, {
         cwd: target.repositoryPath,
         echo: true,
         onStdout: (text) => logger.appendRaw(text),
@@ -101,6 +212,10 @@ function parseCodexUsage(stdout) {
 module.exports = {
   buildPrompt,
   codexCommandCandidates,
+  parseCodexSettings,
+  resolveCodexExecutionSettings,
+  codexExecArgs,
+  logCodexExecutionSettings,
   runCodex,
   parseCodexUsage
 };

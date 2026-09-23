@@ -4,7 +4,13 @@ const { loadConfig, usage } = require("./config");
 const { createLogger } = require("./logger");
 const { verifyRepository, verifyCommitOnRemote } = require("./git");
 const { getCompletedIssueComment } = require("./github");
-const { buildPrompt, runCodex, parseCodexUsage } = require("./codex");
+const {
+  buildPrompt,
+  resolveCodexExecutionSettings,
+  logCodexExecutionSettings,
+  runCodex,
+  parseCodexUsage
+} = require("./codex");
 
 async function runTask({ target, task, index, total, logger }) {
   const issue = Number(task.issue);
@@ -15,10 +21,13 @@ async function runTask({ target, task, index, total, logger }) {
   logger.line(`Type: ${task.type}`);
   logger.line(`Task started at: ${new Date().toISOString()}`);
 
+  const codexSettings = resolveCodexExecutionSettings(target);
+  logCodexExecutionSettings(logger, codexSettings);
+
   const { promptPath, prompt } = buildPrompt(task.type, issue);
   logger.line(`Prompt template: ${promptPath}`);
 
-  const codexResult = await runCodex(target, prompt, logger);
+  const codexResult = await runCodex(target, prompt, logger, codexSettings);
   logger.line("");
   logger.line(`Codex exit code: ${codexResult.code}`);
   logger.line(`Task codex process ended at: ${new Date().toISOString()}`);

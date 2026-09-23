@@ -36,6 +36,8 @@ Target 設定例:
 
 `repositoryPath` の相対パスは、Orchestrator を実行するカレントディレクトリから解決されます。
 
+Codex の `model`、`reasoning effort`、`service tier` は、Target 設定、対象リポジトリの `.codex/config.toml`、ユーザーの `config.toml` の優先順で解決します。解決できた値は `codex exec` に明示的に渡し、Task 開始ログへ出力します。解決できない値は推測せず `unknown` と記録します。Target 設定で固定する場合は `codexModel`、`codexReasoningEffort`、`codexServiceTier` を指定します。
+
 Codex CLI が PATH から見つからない環境では、環境変数 `CODEX_COMMAND` か Target 設定の `codexCommand` に実行ファイルを指定できます。
 指定したコマンドが見つからない場合は、PATH 上の `codex.exe` / `codex.cmd` / `codex` も順に試します。
 

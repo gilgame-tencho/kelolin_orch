@@ -86,6 +86,12 @@ function validateTarget(target) {
   if (target.codexCommand !== undefined) {
     requireString(target, "codexCommand", "target");
   }
+
+  for (const key of ["codexModel", "codexReasoningEffort", "codexServiceTier"]) {
+    if (target[key] !== undefined) {
+      requireString(target, key, "target");
+    }
+  }
 }
 
 function validateTasks(taskList) {
