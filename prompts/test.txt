@@ -1,0 +1,22 @@
+#{issue} のテストTaskを実施してください。
+
+対象Issueの内容を確認し、必要なテスト、確認を実施してください。
+
+作業完了後は以下まで実施してください。
+- Commit
+- Remote RepositoryへのPush
+- 対象Issueへの実施結果コメント投稿
+
+Commit MessageにはIssue番号を含めてください。
+※CommitおよびPushは変更が発生しない場合は不要です
+
+Issueへの完了コメントには、Orchestratorが機械的に完了確認できるよう、
+必ず以下の2行を含めてください。
+
+Status: COMPLETED
+Commit: <最終的にPushしたCommit ID>
+※Commitが無い場合は「追加変更なし」としてください
+
+上記すべてを完了できた場合のみ `Status: COMPLETED` としてください。
+Commit、Push、Issueコメント投稿のいずれかを完了できない場合は、
+完了コメントとして `Status: COMPLETED` を投稿しないでください。
