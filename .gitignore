@@ -1,8 +1,10 @@
 
 logs/*
 targets/*.json
-tasks.json
+
+tasks/*.json
 tasks/*/*.json
+
 node_modules/
 keys/*.key
-prompts/test.txt
+prompts/hello.txt
