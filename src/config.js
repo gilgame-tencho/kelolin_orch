@@ -27,12 +27,21 @@ function parseArgs(argv) {
 
   for (let i = 0; i < argv.length; i += 1) {
     const current = argv[i];
-    if (current === "--target" || current === "--tasks") {
+    if (
+      current === "--target" ||
+      current === "--tasks" ||
+      current === "--start-at"
+    ) {
       const value = argv[i + 1];
       if (!value || value.startsWith("--")) {
         throw new Error(`Missing value for ${current}\n${usage()}`);
       }
-      args[current.slice(2)] = value;
+
+      if (current === "--start-at") {
+        args.startAt = value;
+      }else{
+        args[current.slice(2)] = value;
+      }
       i += 1;
       continue;
     }
@@ -51,6 +60,16 @@ function parseArgs(argv) {
 
   if (!args.target || !args.tasks) {
     throw new Error(`Missing required arguments.\n${usage()}`);
+  }
+
+  if (args.startAt !== undefined) {
+    const startAt = new Date(args.startAt);
+
+    if (Number.isNaN(startAt.getTime())) {
+      throw new Error(
+        `Invalid --start-at value: ${args.startAt}\n ex: --start-at 2023-01-01T12:00:00+09:00`
+      );
+    }
   }
 
   return args;
@@ -145,7 +164,8 @@ function loadConfig(argv) {
     },
     tasks: taskFile.data,
     targetPath: targetFile.path,
-    tasksPath: taskFile.path
+    tasksPath: taskFile.path,
+    startAt: args.startAt || null
   };
 }
 

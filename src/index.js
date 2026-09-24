@@ -4,6 +4,7 @@ const { loadConfig, usage } = require("./config");
 const { createLogger } = require("./logger");
 const { verifyRepository, verifyCommitOnRemote } = require("./git");
 const { getCompletedIssueComment } = require("./github");
+const { setTimeout: sleep } = require("node:timers/promises");
 const {
   buildPrompt,
   resolveCodexExecutionSettings,
@@ -15,6 +16,29 @@ const {
   readOwnerSignal,
   OWNER_SIGNAL_PATH
 } = require("./owner-signal");
+
+
+async function waitUntil(startAt, logger) {
+  if (!startAt) {
+    return;
+  }
+
+  const scheduledAt = new Date(startAt);
+  const remainingMs = scheduledAt.getTime() - Date.now();
+
+  if (remainingMs <= 0) {
+    logger.line(`Scheduled start already passed: ${startAt}`);
+    logger.line("Starting immediately.");
+    return;
+  }
+
+  logger.line(`Scheduled start: ${startAt}`);
+  logger.line("Waiting until scheduled start...");
+
+  await sleep(remainingMs);
+
+  logger.line("Scheduled start time reached.");
+}
 
 async function runTask({ target, task, index, total, logger }) {
   const issue = Number(task.issue);
@@ -110,8 +134,11 @@ async function main() {
   logger.line(`Branch: ${config.target.branch}`);
   logger.line(`Remote: ${config.target.remote}`);
   logger.line(`Tasks: ${total}`);
+  logger.line("");
 
   try {
+    await waitUntil(config.startAt, logger);
+
     // ##### Check before starting the first task #####
     // verify git repository
     logger.line("");
