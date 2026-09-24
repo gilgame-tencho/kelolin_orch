@@ -11,6 +11,10 @@ const {
   runCodex,
   parseCodexUsage
 } = require("./codex");
+const {
+  readOwnerSignal,
+  OWNER_SIGNAL_PATH
+} = require("./owner-signal");
 
 async function runTask({ target, task, index, total, logger }) {
   const issue = Number(task.issue);
@@ -113,6 +117,17 @@ async function main() {
     logger.line("Repository verification: OK");
 
     for (const [index, task] of config.tasks.tasks.entries()) {
+
+      const beforeTaskSignal = readOwnerSignal();
+
+      if (beforeTaskSignal === "stop") {
+        logger.line("");
+        logger.line("Owner signal: stop");
+        logger.line("Next task was not started.");
+        logger.line(`${completed} / ${total} tasks completed.`);
+        return 0;
+      }
+      
       await runTask({
         target: config.target,
         task,
@@ -121,6 +136,16 @@ async function main() {
         logger
       });
       completed += 1;
+
+      const afterTaskSignal = readOwnerSignal();
+      
+      if (afterTaskSignal === "stop") {
+        logger.line("");
+        logger.line("Owner signal: stop");
+        logger.line("Next task was not started.");
+        logger.line(`${completed} / ${total} tasks completed.`);
+        return 0;
+      }
     }
 
     logger.line("");

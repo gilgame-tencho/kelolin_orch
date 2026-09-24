@@ -5,6 +5,8 @@ targets/*.json
 tasks/*.json
 tasks/*/*.json
 
+config/*.json
+
 node_modules/
 keys/*.key
 prompts/hello.txt

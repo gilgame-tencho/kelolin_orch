@@ -1,0 +1,4 @@
+{
+  "usage_owner_signal": "run: running, stop: I will pause after the current task is finished. ",
+  "owner_signal": "run"
+}
