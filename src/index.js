@@ -111,6 +111,7 @@ async function main() {
   logger.line(`Tasks: ${total}`);
 
   try {
+    // Check before starting the first task
     logger.line("");
     logger.line("Verifying repository...");
     await verifyRepository(config.target);
@@ -118,6 +119,7 @@ async function main() {
 
     for (const [index, task] of config.tasks.tasks.entries()) {
 
+      // check before starting the task
       const beforeTaskSignal = readOwnerSignal();
 
       if (beforeTaskSignal === "stop") {
@@ -135,7 +137,16 @@ async function main() {
         total,
         logger
       });
+
+      // check after finishing the task. not completed yet.
+      logger.line("Verifying repository...");
+      await verifyRepository(config.target);
+      logger.line("Repository verification: OK");
+
       completed += 1;
+
+      // check after finishing the completed task.
+      // xxxxxxx
     }
 
     logger.line("");
