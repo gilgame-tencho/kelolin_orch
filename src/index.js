@@ -136,16 +136,6 @@ async function main() {
         logger
       });
       completed += 1;
-
-      const afterTaskSignal = readOwnerSignal();
-      
-      if (afterTaskSignal === "stop") {
-        logger.line("");
-        logger.line("Owner signal: stop");
-        logger.line("Next task was not started.");
-        logger.line(`${completed} / ${total} tasks completed.`);
-        return 0;
-      }
     }
 
     logger.line("");
