@@ -19,4 +19,4 @@ Commit: <最終的にPushしたCommit ID>
 
 上記すべてを完了できた場合のみ `Status: COMPLETED` としてください。
 Commit、Push、Issueコメント投稿のいずれかを完了できない場合は、
-完了コメントとして `Status: COMPLETED` を投稿しないでください。
+完了コメントとして `Status: COMPLETED` を含めないでください。
