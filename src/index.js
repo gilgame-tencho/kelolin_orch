@@ -99,6 +99,7 @@ async function main() {
   const logger = createLogger(config.target.targetId, config.tasksPath);
   const total = config.tasks.tasks.length;
   let completed = 0;
+  let skipped = 0;
 
   logger.line("Orchestrator started");
   logger.line(`Started at: ${new Date().toISOString()}`);
@@ -111,7 +112,8 @@ async function main() {
   logger.line(`Tasks: ${total}`);
 
   try {
-    // Check before starting the first task
+    // ##### Check before starting the first task #####
+    // verify git repository
     logger.line("");
     logger.line("Verifying repository...");
     await verifyRepository(config.target);
@@ -119,17 +121,27 @@ async function main() {
 
     for (const [index, task] of config.tasks.tasks.entries()) {
 
-      // check before starting the task
+      // ##### check before starting the task #####
+      // check owner signal
       const beforeTaskSignal = readOwnerSignal();
-
       if (beforeTaskSignal === "stop") {
         logger.line("");
         logger.line("Owner signal: stop");
         logger.line("Next task was not started.");
         logger.line(`${completed} / ${total} tasks completed.`);
+        logger.line(`${skipped} / ${total} tasks skipped.`);
         return 0;
       }
-      
+
+      // check completed comment for the task's issue
+      const completedComment = await getCompletedIssueComment(config.target.repositoryPath, Number(task.issue));
+      if (completedComment) {
+        logger.line("Issue completed comment: found");
+        logger.line(`Issue: ${task.issue} is already completed. Skipping this task.`);
+        skipped += 1;
+        continue;
+      }
+
       await runTask({
         target: config.target,
         task,
@@ -138,26 +150,28 @@ async function main() {
         logger
       });
 
-      // check after finishing the task. not completed yet.
+      // ##### check after finishing the task. not completed yet. #####
       logger.line("Verifying repository...");
       await verifyRepository(config.target);
       logger.line("Repository verification: OK");
 
       completed += 1;
 
-      // check after finishing the completed task.
+      // ##### check after finishing the completed task. #####
       // xxxxxxx
     }
 
     logger.line("");
     logger.line("Orchestrator completed successfully.");
     logger.line(`${completed} / ${total} tasks completed.`);
+    logger.line(`${skipped} / ${total} tasks skipped.`);
     logger.line(`Log file: ${logger.logPath}`);
     return 0;
   } catch (error) {
     logger.error("");
     logger.error("Orchestrator aborted.");
     logger.error(`Completed: ${completed} / ${total}`);
+    logger.line(`Skipped: ${skipped} / ${total}`);
     logger.error(`Reason: ${error.message}`);
 
     if (error.result) {
