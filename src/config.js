@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const VALID_TASK_TYPES = new Set([
   "hello",
+  "resume",
   "test",
   "investigation",
   "development",
@@ -125,16 +126,27 @@ function validateTasks(taskList) {
   }
 
   for (const [index, task] of taskList.tasks.entries()) {
-    if (task.issue === undefined || task.issue === null || !Number.isInteger(Number(task.issue))) {
-      throw new Error(`tasks.tasks[${index}].issue is required and must be an integer.`);
-    }
-
     if (typeof task.type !== "string" || task.type.trim() === "") {
       throw new Error(`tasks.tasks[${index}].type is required.`);
     }
 
     if (!VALID_TASK_TYPES.has(task.type)) {
       throw new Error(`Unknown task type at tasks.tasks[${index}]: ${task.type}`);
+    }
+
+    if(task.type === "resume") {
+      if(
+        task.sessionId === undefined || 
+        task.sessionId === null || 
+        typeof task.sessionId !== "string" || 
+        task.sessionId.trim() === ""
+      ) {
+        throw new Error(`tasks.tasks[${index}].sessionId is required for resume tasks.`);
+      }
+    }else{
+      if (task.issue === undefined || task.issue === null || !Number.isInteger(Number(task.issue))) {
+        throw new Error(`tasks.tasks[${index}].issue is required and must be an integer.`);
+      }
     }
   }
 }

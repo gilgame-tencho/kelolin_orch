@@ -117,6 +117,7 @@ function resolveCodexExecutionSettings(target, env = process.env) {
 }
 
 function codexExecArgs(settings, prompt) {
+  // const args = ["exec", "--json"];
   const args = ["exec", "--json", "--ephemeral"];
 
   if (settings.model !== "unknown") {
@@ -130,6 +131,11 @@ function codexExecArgs(settings, prompt) {
   }
 
   args.push(prompt);
+  return args;
+}
+
+function codexResumeArgs(sessionId, prompt) {
+  const args = ["exec", "resume", sessionId, "--json", prompt];
   return args;
 }
 
@@ -148,6 +154,41 @@ async function runCodex(target, prompt, logger, settings = resolveCodexExecution
   for (const command of candidates) {
     try {
       logger.line(`Codex command: ${command}`);
+      return await runCommand(command, args, {
+        cwd: target.repositoryPath,
+        echo: true,
+        onStdout: (text) => logger.appendRaw(text),
+        onStderr: (text) => logger.appendRaw(text)
+      });
+    } catch (error) {
+      lastError = error;
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
+      logger.line(`Codex command not found: ${command}`);
+    }
+  }
+
+  const message = [
+    "Codex CLI was not found.",
+    "Set CODEX_COMMAND or target.codexCommand to a valid codex command.",
+    `Tried: ${candidates.join(", ")}`
+  ].join(" ");
+  const error = new Error(message);
+  error.cause = lastError;
+  throw error;
+}
+
+async function runCodexResume(target, sessionId, prompt, logger) {
+  logger.line("Starting codex exec resume ...");
+  const candidates = codexCommandCandidates(target);
+  const args = codexResumeArgs(sessionId, prompt);
+  let lastError = null;
+
+  for (const command of candidates) {
+    try {
+      logger.line(`Codex command: ${command}`);
+      logger.line(`Resume session: ${sessionId}`);
       return await runCommand(command, args, {
         cwd: target.repositoryPath,
         echo: true,
@@ -217,5 +258,7 @@ module.exports = {
   codexExecArgs,
   logCodexExecutionSettings,
   runCodex,
+  codexResumeArgs,
+  runCodexResume,
   parseCodexUsage
 };

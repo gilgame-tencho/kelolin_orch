@@ -10,6 +10,7 @@ const {
   resolveCodexExecutionSettings,
   logCodexExecutionSettings,
   runCodex,
+  runCodexResume,
   parseCodexUsage
 } = require("./codex");
 const {
@@ -59,7 +60,17 @@ async function waitUntil(startAt, logger) {
 }
 
 async function runTask({ target, task, index, total, logger }) {
-  const issue = Number(task.issue);
+  let issue = null;
+
+  if (task.type === "resume") {
+    issue = "-";
+    if (!task.sessionId) {
+      throw new Error(`tasks.tasks[${index}].sessionId is required for resume tasks.`);
+    }
+    // return runResumeTask({ target, task, index, total, logger });
+  }else{
+    issue = Number(task.issue);
+  }
 
   logger.line("");
   logger.line(`[Task ${index + 1}/${total}]`);
@@ -70,10 +81,19 @@ async function runTask({ target, task, index, total, logger }) {
   const codexSettings = resolveCodexExecutionSettings(target);
   logCodexExecutionSettings(logger, codexSettings);
 
-  const { promptPath, prompt } = buildPrompt(task.type, issue);
-  logger.line(`Prompt template: ${promptPath}`);
+  let codexResult = null;
+  if (task.type === "resume") {
+    const { promptPath, prompt } = buildPrompt("resume");
+    logger.line(`Prompt template: ${promptPath}`);
 
-  const codexResult = await runCodex(target, prompt, logger, codexSettings);
+    codexResult = await runCodexResume(target, task.sessionId, prompt, logger);
+  }else{
+    const { promptPath, prompt } = buildPrompt(task.type, issue);
+    logger.line(`Prompt template: ${promptPath}`);
+
+    codexResult = await runCodex(target, prompt, logger, codexSettings);
+  }
+
   logger.line("");
   logger.line(`Codex exit code: ${codexResult.code}`);
   logger.line(`Task codex process ended at: ${new Date().toISOString()}`);
@@ -178,13 +198,15 @@ async function main() {
         return 0;
       }
 
-      // check completed comment for the task's issue
-      const completedComment = await getCompletedIssueComment(config.target.repositoryPath, Number(task.issue));
-      if (completedComment) {
-        logger.line("Issue completed comment: found");
-        logger.line(`Issue: ${task.issue} is already completed. Skipping this task.`);
-        skipped += 1;
-        continue;
+      if ( task.type !== "resume") {
+        // check completed comment for the task's issue
+        const completedComment = await getCompletedIssueComment(config.target.repositoryPath, Number(task.issue));
+        if (completedComment) {
+          logger.line("Issue completed comment: found");
+          logger.line(`Issue: ${task.issue} is already completed. Skipping this task.`);
+          skipped += 1;
+          continue;
+        }
       }
 
       await runTask({
