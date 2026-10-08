@@ -4,6 +4,7 @@ const path = require("node:path");
 const VALID_TASK_TYPES = new Set([
   "hello",
   "resume",
+  "fixbug",
   "test",
   "investigation",
   "development",
