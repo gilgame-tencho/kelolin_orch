@@ -29,12 +29,12 @@ function sleep(ms) {
   });
 }
 
-async function afterTaskMsg( completed, skipped, total, logger) {
+async function afterTaskMsg( status, completed, skipped, total, logger) {
   logger.line(`${completed} / ${total} tasks completed.`);
   logger.line(`${skipped} / ${total} tasks skipped.`); 
 
   await notifySlack(buildSlackMessage({
-    status: "SUCCESS",
+    status: status,
     // targetId: config.target.targetId,
     targetId: "stampo",
     // branch: config.target.branch,
@@ -219,7 +219,7 @@ async function main() {
         logger.line("Next task was not started.");
         // logger.line(`${completed} / ${total} tasks completed.`);
         // logger.line(`${skipped} / ${total} tasks skipped.`);
-        await afterTaskMsg(completed, skipped, total, logger);
+        await afterTaskMsg("STOPPED", completed, skipped, total, logger);
         return 0;
       }
 
@@ -257,7 +257,7 @@ async function main() {
     logger.line("Orchestrator completed successfully.");
     // logger.line(`${completed} / ${total} tasks completed.`);
     // logger.line(`${skipped} / ${total} tasks skipped.`);
-    await afterTaskMsg(completed, skipped, total, logger);
+    await afterTaskMsg("SUCCESS", completed, skipped, total, logger);
     logger.line(`Log file: ${logger.logPath}`);
     return 0;
   } catch (error) {
@@ -265,7 +265,7 @@ async function main() {
     logger.error("Orchestrator aborted.");
     // logger.error(`Completed: ${completed} / ${total}`);
     // logger.line(`Skipped: ${skipped} / ${total}`);
-    await afterTaskMsg(completed, skipped, total, logger);
+    await afterTaskMsg("FAILED", completed, skipped, total, logger);
     logger.error(`Reason: ${error.message}`);
 
     if (error.result) {
