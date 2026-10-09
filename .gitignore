@@ -9,6 +9,7 @@ config/*.json
 
 node_modules/
 keys/*.key
+keys/*.json
 prompts/hello.txt
 
 otel/data/*.jsonl

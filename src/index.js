@@ -17,11 +17,33 @@ const {
   readOwnerSignal,
   OWNER_SIGNAL_PATH
 } = require("./owner-signal");
+const {
+  notifySlack,
+  buildSlackMessage
+} = require("./slack");
+
 
 function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+async function afterTaskMsg( completed, skipped, total, logger) {
+  logger.line(`${completed} / ${total} tasks completed.`);
+  logger.line(`${skipped} / ${total} tasks skipped.`); 
+
+  await notifySlack(buildSlackMessage({
+    status: "SUCCESS",
+    // targetId: config.target.targetId,
+    targetId: "stampo",
+    // branch: config.target.branch,
+    branch: "dev",
+    total,
+    completed,
+    skipped,
+    logPath: logger.logPath
+  }), logger);
 }
 
 async function waitUntil(startAt, logger) {
@@ -195,8 +217,9 @@ async function main() {
         logger.line("");
         logger.line("Owner signal: stop");
         logger.line("Next task was not started.");
-        logger.line(`${completed} / ${total} tasks completed.`);
-        logger.line(`${skipped} / ${total} tasks skipped.`);
+        // logger.line(`${completed} / ${total} tasks completed.`);
+        // logger.line(`${skipped} / ${total} tasks skipped.`);
+        await afterTaskMsg(completed, skipped, total, logger);
         return 0;
       }
 
@@ -232,15 +255,17 @@ async function main() {
 
     logger.line("");
     logger.line("Orchestrator completed successfully.");
-    logger.line(`${completed} / ${total} tasks completed.`);
-    logger.line(`${skipped} / ${total} tasks skipped.`);
+    // logger.line(`${completed} / ${total} tasks completed.`);
+    // logger.line(`${skipped} / ${total} tasks skipped.`);
+    await afterTaskMsg(completed, skipped, total, logger);
     logger.line(`Log file: ${logger.logPath}`);
     return 0;
   } catch (error) {
     logger.error("");
     logger.error("Orchestrator aborted.");
-    logger.error(`Completed: ${completed} / ${total}`);
-    logger.line(`Skipped: ${skipped} / ${total}`);
+    // logger.error(`Completed: ${completed} / ${total}`);
+    // logger.line(`Skipped: ${skipped} / ${total}`);
+    await afterTaskMsg(completed, skipped, total, logger);
     logger.error(`Reason: ${error.message}`);
 
     if (error.result) {
