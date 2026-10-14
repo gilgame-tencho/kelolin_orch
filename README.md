@@ -77,6 +77,11 @@ node src/index.js --target targets/stampo.json --tasks tasks/stampo/tasks.json
 npm start -- --target targets/stampo.json --tasks tasks/stampo/tasks.json
 ```
 
+```bash
+ npm start -- --tasks tasks/stampo_tasks.json --start-at "2026-10-09T23:40:00+09:00"
+```
+
+
 ## 動作概要
 
 1. Target 設定と Task List を読み込み、最低限の validation を行う
