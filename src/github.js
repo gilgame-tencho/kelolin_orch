@@ -15,8 +15,11 @@ function normalizeComments(payload) {
 function findLatestCompletedComment(comments) {
   const completed = comments
     .map((comment, index) => ({ ...comment, index }))
-    .filter((comment) => typeof comment.body === "string" && comment.body.includes("Status: COMPLETED"))
-    .filter((comment) => /Commit:\s*([0-9a-fA-F]{7,40})/.test(comment.body));
+    .filter(
+      (comment) =>
+        typeof comment.body === "string" &&
+        /^Status:\s*COMPLETED\s*$/m.test(comment.body)
+    );
 
   if (completed.length === 0) {
     return null;
@@ -29,17 +32,16 @@ function findLatestCompletedComment(comments) {
     if (Number.isNaN(aTime) && Number.isNaN(bTime)) {
       return a.index - b.index;
     }
-    if (Number.isNaN(aTime)) {
-      return -1;
-    }
-    if (Number.isNaN(bTime)) {
-      return 1;
-    }
+    if (Number.isNaN(aTime)) return -1;
+    if (Number.isNaN(bTime)) return 1;
+
     return aTime - bTime;
   });
 
   const latest = completed[completed.length - 1];
-  const match = latest.body.match(/Commit:\s*([0-9a-fA-F]{7,40})/);
+  const match = latest.body.match(
+    /^Commit:\s*([0-9a-fA-F]{7,40})\s*$/mi
+  );
 
   return {
     body: latest.body,

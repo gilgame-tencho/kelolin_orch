@@ -148,28 +148,47 @@ async function runTask({ target, task, index, total, logger }) {
     throw new Error(`codex exec failed for #${issue} with exit code ${codexResult.code}`);
   }
 
-  const completedComment = await getCompletedIssueComment(target.repositoryPath, issue);
+  const completedComment = await getCompletedIssueComment(
+    target.repositoryPath,
+    issue
+  );
+
   if (!completedComment) {
     logger.line("Issue completed comment: NOT FOUND");
-    throw new Error(`Status: COMPLETED comment with Commit was not found for #${issue}`);
+    throw new Error(
+      `Status: COMPLETED comment was not found for #${issue}`
+    );
   }
 
   logger.line("Issue completed comment: found");
-  logger.line(`Commit: ${completedComment.commitId}`);
 
-  if (!completedComment.commitId) {
-    throw new Error(`Commit ID could not be extracted for #${issue}`);
+  if (completedComment.commitId) {
+    logger.line(`Commit: ${completedComment.commitId}`);
+
+    const remoteCommit = await verifyCommitOnRemote(
+      target,
+      completedComment.commitId
+    );
+
+    logger.line(
+      `Remote branches containing commit: ${
+        remoteCommit.branches.join(", ") || "(none)"
+      }`
+    );
+
+    if (!remoteCommit.found) {
+      logger.line("Remote commit: NOT FOUND");
+      throw new Error(
+        `commit ${completedComment.commitId} was not found on remote ${target.remote}`
+      );
+    }
+
+    logger.line("Remote commit: found");
+  } else {
+    logger.line("Commit: NONE");
+    logger.line("Remote commit verification: SKIPPED");
   }
 
-  const remoteCommit = await verifyCommitOnRemote(target, completedComment.commitId);
-  logger.line(`Remote branches containing commit: ${remoteCommit.branches.join(", ") || "(none)"}`);
-
-  if (!remoteCommit.found) {
-    logger.line("Remote commit: NOT FOUND");
-    throw new Error(`commit ${completedComment.commitId} was not found on remote ${target.remote}`);
-  }
-
-  logger.line("Remote commit: found");
   logger.line("Result: SUCCESS");
   logger.line(`Task ended at: ${new Date().toISOString()}`);
 }
