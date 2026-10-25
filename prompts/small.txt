@@ -1,0 +1,1 @@
+codex exec -c model_reasoning_effort="low" --ephemeral "OKとだけ回答してください。ツールは使用しないでください。"
