@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { runCommand } = require("./process");
+const { postIssueComment } = require("./github");
 
 const WINDOWS_GIT_BASH_CANDIDATES = [
   "C:\\Program Files\\Git\\bin\\bash.exe",
@@ -117,9 +118,53 @@ async function runFullTest(target, issue, logger, options = {}) {
   }
 }
 
+function buildFullTestFailureComment(target, issue, error, executedAt = new Date()) {
+  const exitCode = error.result && Number.isInteger(error.result.code)
+    ? String(error.result.code)
+    : "unknown";
+  const testResult = exitCode === "unknown" ? "ERROR" : "FAILED";
+  const details = exitCode === "unknown"
+    ? "FullTest process could not be started. See local Orchestrator logs"
+    : "See local FullTest logs";
+
+  return [
+    "[Orchestrator] FullTest failed",
+    "Task-Type: FullTest",
+    `Test-Result: ${testResult}`,
+    `Issue: #${issue}`,
+    `Branch: ${target.branch}`,
+    `Exit-Code: ${exitCode}`,
+    `Executed-At: ${executedAt.toISOString()}`,
+    `Details: ${details}`
+  ].join("\n");
+}
+
+async function runFullTestTask(target, issue, logger, options = {}) {
+  const executeFullTest = options.runFullTest || runFullTest;
+  const notifyIssue = options.postIssueComment || postIssueComment;
+  const now = options.now || (() => new Date());
+
+  try {
+    return await executeFullTest(target, issue, logger, options.fullTestOptions);
+  } catch (fullTestError) {
+    const body = buildFullTestFailureComment(target, issue, fullTestError, now());
+    logger.line(`FullTest failure notification: attempting for Issue #${issue}`);
+    try {
+      await notifyIssue(target.repositoryPath, issue, body);
+      logger.line(`FullTest failure notification: posted to Issue #${issue}`);
+    } catch (notificationError) {
+      logger.line(`FullTest failure notification: FAILED for Issue #${issue}`);
+      logger.line(`FullTest notification error: ${notificationError.message}`);
+    }
+    throw fullTestError;
+  }
+}
+
 module.exports = {
   WINDOWS_GIT_BASH_CANDIDATES,
+  buildFullTestFailureComment,
   resolveFullTestScriptPath,
   resolveFullTestShell,
-  runFullTest
+  runFullTest,
+  runFullTestTask
 };

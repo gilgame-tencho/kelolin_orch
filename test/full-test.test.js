@@ -7,7 +7,8 @@ const test = require("node:test");
 const {
   resolveFullTestScriptPath,
   resolveFullTestShell,
-  runFullTest
+  runFullTest,
+  runFullTestTask
 } = require("../src/full-test");
 
 function fixture(t) {
@@ -109,4 +110,83 @@ test("FullTest uses an explicit configured shell and rejects a missing one", () 
     env: {},
     existsSync: () => false
   }), /shell does not exist/);
+});
+
+test("successful FullTest does not post an Issue comment", async () => {
+  let notifications = 0;
+  await runFullTestTask({ repositoryPath: "C:\\repo", branch: "dev" }, 1003, { line() {} }, {
+    runFullTest: async () => ({ code: 0 }),
+    postIssueComment: async () => { notifications += 1; }
+  });
+  assert.equal(notifications, 0);
+});
+
+test("failed FullTest posts one minimal notification and preserves the failure", async () => {
+  const failure = new Error("sensitive diagnostic text");
+  failure.result = { code: 7 };
+  const notifications = [];
+  const lines = [];
+
+  await assert.rejects(
+    runFullTestTask({ repositoryPath: "C:\\secret\\repo", branch: "dev" }, 1003, {
+      line: (line) => lines.push(line)
+    }, {
+      runFullTest: async () => { throw failure; },
+      postIssueComment: async (...args) => { notifications.push(args); },
+      now: () => new Date("2026-10-28T10:00:00.000Z")
+    }),
+    (error) => error === failure
+  );
+
+  assert.equal(notifications.length, 1);
+  const [repositoryPath, issue, body] = notifications[0];
+  assert.equal(repositoryPath, "C:\\secret\\repo");
+  assert.equal(issue, 1003);
+  assert.match(body, /Task-Type: FullTest/);
+  assert.match(body, /Test-Result: FAILED/);
+  assert.match(body, /Exit-Code: 7/);
+  assert.match(body, /Branch: dev/);
+  assert.match(body, /Executed-At: 2026-10-28T10:00:00.000Z/);
+  assert.doesNotMatch(body, /secret|sensitive diagnostic text/i);
+  assert.ok(lines.includes("FullTest failure notification: posted to Issue #1003"));
+});
+
+test("launch failure posts ERROR once with unknown exit code", async () => {
+  const notifications = [];
+  await assert.rejects(
+    runFullTestTask({ repositoryPath: "C:\\repo", branch: "dev" }, 1003, { line() {} }, {
+      runFullTest: async () => { throw new Error("spawn failed at C:\\secret"); },
+      postIssueComment: async (...args) => { notifications.push(args); }
+    }),
+    /spawn failed/
+  );
+
+  assert.equal(notifications.length, 1);
+  assert.match(notifications[0][2], /Test-Result: ERROR/);
+  assert.match(notifications[0][2], /Exit-Code: unknown/);
+  assert.doesNotMatch(notifications[0][2], /spawn failed|secret/i);
+});
+
+test("notification failure is logged once and never replaces the FullTest failure", async () => {
+  const failure = new Error("original FullTest failure");
+  failure.result = { code: 1 };
+  const lines = [];
+  let attempts = 0;
+
+  await assert.rejects(
+    runFullTestTask({ repositoryPath: "C:\\repo", branch: "dev" }, 1003, {
+      line: (line) => lines.push(line)
+    }, {
+      runFullTest: async () => { throw failure; },
+      postIssueComment: async () => {
+        attempts += 1;
+        throw new Error("gh authentication failed");
+      }
+    }),
+    (error) => error === failure
+  );
+
+  assert.equal(attempts, 1);
+  assert.ok(lines.includes("FullTest failure notification: FAILED for Issue #1003"));
+  assert.ok(lines.includes("FullTest notification error: gh authentication failed"));
 });

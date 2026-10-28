@@ -4,7 +4,7 @@ const { loadConfig, usage } = require("./config");
 const { createLogger } = require("./logger");
 const { verifyRepository, verifyCommitOnRemote } = require("./git");
 const { getCompletedIssueComment } = require("./github");
-const { runFullTest } = require("./full-test");
+const { runFullTestTask } = require("./full-test");
 // const { setTimeout: sleep } = require("node:timers/promises");
 const {
   buildPrompt,
@@ -102,7 +102,7 @@ async function runTask({ target, task, index, total, logger }) {
   logger.line(`Task started at: ${new Date().toISOString()}`);
 
   if (task.type === "FullTest") {
-    await runFullTest(target, issue, logger);
+    await runFullTestTask(target, issue, logger);
     logger.line("Result: SUCCESS");
     logger.line(`Task ended at: ${new Date().toISOString()}`);
     return;
@@ -250,7 +250,7 @@ async function main() {
         return 0;
       }
 
-      if (task.type !== "resume" && task.type !== "FullTest") {
+      if (shouldCheckCompletedIssue(task)) {
         // check completed comment for the task's issue
         const completedComment = await getCompletedIssueComment(config.target.repositoryPath, Number(task.issue));
         if (completedComment) {
@@ -308,11 +308,23 @@ async function main() {
   }
 }
 
-main()
-  .then((code) => {
-    process.exitCode = code;
-  })
-  .catch((error) => {
-    console.error(error.message);
-    process.exitCode = 1;
-  });
+function shouldCheckCompletedIssue(task) {
+  return task.type !== "resume" && task.type !== "FullTest";
+}
+
+if (require.main === module) {
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+    });
+}
+
+module.exports = {
+  main,
+  runTask,
+  shouldCheckCompletedIssue
+};

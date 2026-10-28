@@ -65,7 +65,15 @@ async function getCompletedIssueComment(repositoryPath, issue) {
   return findLatestCompletedComment(normalizeComments(payload));
 }
 
+async function postIssueComment(repositoryPath, issue, body, options = {}) {
+  const execute = options.runChecked || runChecked;
+  return execute("gh", ["issue", "comment", String(issue), "--body", body], {
+    cwd: repositoryPath
+  });
+}
+
 module.exports = {
   findLatestCompletedComment,
-  getCompletedIssueComment
+  getCompletedIssueComment,
+  postIssueComment
 };
