@@ -35,9 +35,32 @@ function resolveFullTestShell(target, options = {}) {
   return shellPath;
 }
 
+function resolveFullTestScriptPath(target) {
+  const repositoryPath = path.resolve(target.repositoryPath);
+  const scriptPath = path.resolve(
+    repositoryPath,
+    target.fullTestScript || "full_test.sh"
+  );
+  const relativePath = path.relative(repositoryPath, scriptPath);
+
+  if (relativePath === ".." || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+    throw new Error(
+      `FullTest script must be inside the target repository: ${target.fullTestScript}`
+    );
+  }
+  return scriptPath;
+}
+
+function isPathInside(repositoryPath, candidatePath) {
+  const relativePath = path.relative(repositoryPath, candidatePath);
+  return relativePath !== ".."
+    && !relativePath.startsWith(`..${path.sep}`)
+    && !path.isAbsolute(relativePath);
+}
+
 async function runFullTest(target, issue, logger, options = {}) {
   const execute = options.runCommand || runCommand;
-  const scriptPath = path.join(target.repositoryPath, "full_test.sh");
+  const scriptPath = resolveFullTestScriptPath(target);
 
   logger.line(`FullTest started at: ${new Date().toISOString()}`);
   logger.line(`FullTest issue: #${issue}`);
@@ -50,13 +73,29 @@ async function runFullTest(target, issue, logger, options = {}) {
     throw error;
   }
 
+  if (!fs.statSync(scriptPath).isFile()) {
+    const error = new Error(`FullTest script is not a file: ${scriptPath}`);
+    logger.line(`FullTest launch error: ${error.message}`);
+    logger.line(`FullTest ended at: ${new Date().toISOString()}`);
+    throw error;
+  }
+
+  const realRepositoryPath = fs.realpathSync(target.repositoryPath);
+  const realScriptPath = fs.realpathSync(scriptPath);
+  if (!isPathInside(realRepositoryPath, realScriptPath)) {
+    const error = new Error(`FullTest script resolves outside the target repository: ${scriptPath}`);
+    logger.line(`FullTest launch error: ${error.message}`);
+    logger.line(`FullTest ended at: ${new Date().toISOString()}`);
+    throw error;
+  }
+
   let shellPath;
   try {
     shellPath = resolveFullTestShell(target, options);
     logger.line(`FullTest shell: ${shellPath}`);
     logger.line(`FullTest working directory: ${target.repositoryPath}`);
 
-    const result = await execute(shellPath, ["./full_test.sh"], {
+    const result = await execute(shellPath, [scriptPath], {
       cwd: target.repositoryPath,
       echo: true
     });
@@ -80,6 +119,7 @@ async function runFullTest(target, issue, logger, options = {}) {
 
 module.exports = {
   WINDOWS_GIT_BASH_CANDIDATES,
+  resolveFullTestScriptPath,
   resolveFullTestShell,
   runFullTest
 };

@@ -3,6 +3,7 @@
   "repositoryPath": "../store_point",
   "branch": "dev",
   "remote": "origin",
+  "fullTestScript": "full_test.sh",
   "codexModel": "gpt-5.6-sol",
   "codexReasoningEffort": "low",
   "codexServiceTier": "default"

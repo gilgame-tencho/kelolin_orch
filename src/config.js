@@ -99,6 +99,21 @@ function requireString(object, key, label) {
   }
 }
 
+function validateFullTestScript(fullTestScript) {
+  if (typeof fullTestScript !== "string" || fullTestScript.trim() === "") {
+    throw new Error("target.fullTestScript must be a non-empty string.");
+  }
+
+  if (path.posix.isAbsolute(fullTestScript) || path.win32.isAbsolute(fullTestScript)) {
+    throw new Error("target.fullTestScript must be a relative path.");
+  }
+
+  const segments = fullTestScript.split(/[\\/]+/);
+  if (segments.includes("..")) {
+    throw new Error("target.fullTestScript must not reference a path outside the target repository.");
+  }
+}
+
 function validateTarget(target) {
   requireString(target, "targetId", "target");
   requireString(target, "repositoryPath", "target");
@@ -111,6 +126,10 @@ function validateTarget(target) {
 
   if (target.fullTestShell !== undefined) {
     requireString(target, "fullTestShell", "target");
+  }
+
+  if (target.fullTestScript !== undefined) {
+    validateFullTestScript(target.fullTestScript);
   }
 
   for (const key of ["codexModel", "codexReasoningEffort", "codexServiceTier"]) {
@@ -191,5 +210,6 @@ module.exports = {
   VALID_TASK_TYPES,
   loadConfig,
   usage,
+  validateTarget,
   validateTasks
 };

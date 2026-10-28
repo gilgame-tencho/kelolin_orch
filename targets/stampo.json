@@ -1,0 +1,8 @@
+{
+  "targetId": "stampo",
+  "repositoryPath": "../store_point",
+  "branch": "dev",
+  "remote": "origin",
+  "codexCommand": "codex",
+  "fullTestScript": "full_test.sh"
+}
