@@ -4,5 +4,5 @@
   "branch": "dev",
   "remote": "origin",
   "codexCommand": "codex",
-  "fullTestScript": "full_test.sh"
+  "fullTestScript": "tools/full_test.sh"
 }
