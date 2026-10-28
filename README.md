@@ -36,6 +36,8 @@ Target 設定例:
 
 `repositoryPath` の相対パスは、Orchestrator を実行するカレントディレクトリから解決されます。
 
+`FullTest` Task はTargetリポジトリ直下の `full_test.sh` を直接実行します。Git Bashを標準以外の場所にインストールしている場合は、Target設定の `fullTestShell` または環境変数 `FULL_TEST_SHELL` にbash実行ファイルのパスを指定してください。
+
 Codex の `model`、`reasoning effort`、`service tier` は、Target 設定、対象リポジトリの `.codex/config.toml`、ユーザーの `config.toml` の優先順で解決します。解決できた値は `codex exec` に明示的に渡し、Task 開始ログへ出力します。解決できない値は推測せず `unknown` と記録します。Target 設定で固定する場合は `codexModel`、`codexReasoningEffort`、`codexServiceTier` を指定します。
 
 Codex CLI が PATH から見つからない環境では、環境変数 `CODEX_COMMAND` か Target 設定の `codexCommand` に実行ファイルを指定できます。

@@ -11,6 +11,7 @@ const VALID_TASK_TYPES = new Set([
   "design",
   "development_review_action",
   "design_review_action",
+  "FullTest",
 ]);
 
 function usage() {
@@ -108,6 +109,10 @@ function validateTarget(target) {
     requireString(target, "codexCommand", "target");
   }
 
+  if (target.fullTestShell !== undefined) {
+    requireString(target, "fullTestShell", "target");
+  }
+
   for (const key of ["codexModel", "codexReasoningEffort", "codexServiceTier"]) {
     if (target[key] !== undefined) {
       requireString(target, key, "target");
@@ -185,5 +190,6 @@ function loadConfig(argv) {
 module.exports = {
   VALID_TASK_TYPES,
   loadConfig,
-  usage
+  usage,
+  validateTasks
 };

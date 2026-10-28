@@ -4,6 +4,7 @@ const { loadConfig, usage } = require("./config");
 const { createLogger } = require("./logger");
 const { verifyRepository, verifyCommitOnRemote } = require("./git");
 const { getCompletedIssueComment } = require("./github");
+const { runFullTest } = require("./full-test");
 // const { setTimeout: sleep } = require("node:timers/promises");
 const {
   buildPrompt,
@@ -99,6 +100,13 @@ async function runTask({ target, task, index, total, logger }) {
   logger.line(`Issue: #${issue}`);
   logger.line(`Type: ${task.type}`);
   logger.line(`Task started at: ${new Date().toISOString()}`);
+
+  if (task.type === "FullTest") {
+    await runFullTest(target, issue, logger);
+    logger.line("Result: SUCCESS");
+    logger.line(`Task ended at: ${new Date().toISOString()}`);
+    return;
+  }
 
   const codexSettings = resolveCodexExecutionSettings(target);
   logCodexExecutionSettings(logger, codexSettings);
@@ -242,7 +250,7 @@ async function main() {
         return 0;
       }
 
-      if ( task.type !== "resume") {
+      if (task.type !== "resume" && task.type !== "FullTest") {
         // check completed comment for the task's issue
         const completedComment = await getCompletedIssueComment(config.target.repositoryPath, Number(task.issue));
         if (completedComment) {
