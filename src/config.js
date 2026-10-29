@@ -6,6 +6,7 @@ const VALID_TASK_TYPES = new Set([
   "hello",
   "resume",
   "fixbug",
+  "guideline",
   "test",
   "investigation",
   "development",
