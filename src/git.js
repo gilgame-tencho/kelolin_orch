@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const { runChecked } = require("./process");
+const { WarnType1 } = require("./errors");
 
 async function verifyRepository(target) {
   if (!fs.existsSync(target.repositoryPath)) {
@@ -28,7 +29,7 @@ async function verifyRepository(target) {
   });
 
   if (status.stdout.trim() !== "") {
-    throw new Error(`Working tree is not clean:\n${status.stdout}`);
+    throw new WarnType1(`Working tree is not clean:\n${status.stdout}`);
   }
 }
 

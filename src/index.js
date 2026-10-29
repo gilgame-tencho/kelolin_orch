@@ -22,6 +22,7 @@ const {
   notifySlack,
   buildSlackMessage
 } = require("./slack");
+const { WarnType1 } = require("./errors");
 
 
 function sleep(ms) {
@@ -88,7 +89,8 @@ async function runTask({ target, task, index, total, logger }) {
   if (task.type === "resume") {
     issue = "-";
     if (!task.sessionId) {
-      throw new Error(`tasks.tasks[${index}].sessionId is required for resume tasks.`);
+      // throw new Error(`tasks.tasks[${index}].sessionId is required for resume tasks.`);
+      logger.line(`WARN: tasks.tasks[${index}].sessionId is required for resume tasks.`);
     }
     // return runResumeTask({ target, task, index, total, logger });
   }else{

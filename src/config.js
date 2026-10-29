@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { WarnType1 } = require("./errors");
 
 const VALID_TASK_TYPES = new Set([
   "hello",
@@ -166,7 +167,7 @@ function validateTasks(taskList) {
         typeof task.sessionId !== "string" || 
         task.sessionId.trim() === ""
       ) {
-        throw new Error(`tasks.tasks[${index}].sessionId is required for resume tasks.`);
+        console.log(`WARN: tasks.tasks[${index}].sessionId is required for resume tasks.`);
       }
     }else{
       if (task.issue === undefined || task.issue === null || !Number.isInteger(Number(task.issue))) {
