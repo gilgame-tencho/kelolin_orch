@@ -1,4 +1,21 @@
 前回中断した処理を再開してください。
 現在のリポジトリ状態、GitHub Issueの状態、および前回セッションの作業内容を確認してください。
 完了済みの作業は重複して実施せず、未完了部分から作業を継続してください。
-コミットとPushまで実施し、結果をIssueに投稿してください。
+
+作業完了後は以下まで実施してください。
+- Commit
+- Remote RepositoryへのPush
+- 対象Issueへの実施結果コメント投稿
+
+Commit MessageにはIssue番号を含めてください。
+
+Issueへの完了コメントには、Orchestratorが機械的に完了確認できるよう、
+必ず以下の2行を含めてください。
+
+Status: COMPLETED
+Commit: <最終的にPushしたCommit ID>
+
+上記すべてを完了できた場合のみ `Status: COMPLETED` としてください。
+Commit、Push、Issueコメント投稿のいずれかを完了できない場合は、
+完了コメントとして `Status: COMPLETED` を含めないでください。
+

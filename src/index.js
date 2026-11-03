@@ -234,7 +234,7 @@ async function main() {
     // verify git repository
     logger.line("");
     logger.line("Verifying repository...");
-    await verifyRepository(config.target);
+    await verifyRepository(config.target, config.tasks.tasks[0] === "resume");
     logger.line("Repository verification: OK");
 
     for (const [index, task] of config.tasks.tasks.entries()) {
@@ -273,7 +273,7 @@ async function main() {
 
       // ##### check after finishing the task. not completed yet. #####
       logger.line("Verifying repository...");
-      await verifyRepository(config.target);
+      await verifyRepository(config.target, false);
       logger.line("Repository verification: OK");
 
       completed += 1;

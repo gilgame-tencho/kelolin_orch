@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const { runChecked } = require("./process");
 const { WarnType1 } = require("./errors");
 
-async function verifyRepository(target) {
+async function verifyRepository(target, first_resume_flg) {
   if (!fs.existsSync(target.repositoryPath)) {
     throw new Error(`Repository path does not exist: ${target.repositoryPath}`);
   }
@@ -28,7 +28,7 @@ async function verifyRepository(target) {
     cwd: target.repositoryPath
   });
 
-  if (status.stdout.trim() !== "") {
+  if (status.stdout.trim() !== "" && !first_resume_flg) {
     throw new WarnType1(`Working tree is not clean:\n${status.stdout}`);
   }
 }
