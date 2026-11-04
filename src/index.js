@@ -87,15 +87,16 @@ async function runTask({ target, task, index, total, logger }) {
   let issue = null;
 
   if (task.type === "resume") {
-    issue = "-";
+    // issue = "-";
     if (!task.sessionId) {
       // throw new Error(`tasks.tasks[${index}].sessionId is required for resume tasks.`);
       logger.line(`WARN: tasks.tasks[${index}].sessionId is required for resume tasks.`);
     }
     // return runResumeTask({ target, task, index, total, logger });
-  }else{
-    issue = Number(task.issue);
+  // }else{
+    // issue = Number(task.issue);
   }
+  issue = Number(task.issue);
 
   logger.line("");
   logger.line(`[Task ${index + 1}/${total}]`);
@@ -234,7 +235,7 @@ async function main() {
     // verify git repository
     logger.line("");
     logger.line("Verifying repository...");
-    await verifyRepository(config.target, config.tasks.tasks[0] === "resume");
+    await verifyRepository(config.target, config.tasks.tasks[0].type === "resume");
     logger.line("Repository verification: OK");
 
     for (const [index, task] of config.tasks.tasks.entries()) {
